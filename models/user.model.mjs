@@ -32,7 +32,13 @@ export default (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true
     }
-  });
+  },
+    {
+      timestamps: true,
+      tableName: "iphoto_users",
+      paranoid: true
+    }
+  );
 
   return User;
 };
