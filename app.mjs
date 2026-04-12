@@ -11,6 +11,9 @@ const app = express();
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.json({ message: "iPhoto API is running" });
+});
 app.use("/api", userRoutes);
 app.use("/api/admin", adminRoutes);
 
