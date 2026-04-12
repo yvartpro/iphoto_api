@@ -20,24 +20,24 @@ export const extendLicense = async (req, res) => {
   const { userId } = req.body;
 
   const user = await db.User.findByPk(userId);
-  if (!user) return res.status(404).json({ message: "Not found" });
+  if (!user) return res.status(404).json({ message: "Compte non trouvé" });
 
   user.expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   await user.save();
 
-  res.json({ message: "Extended" });
+  res.json({ message: "Prolongé" });
 };
 
 export const deactivateUser = async (req, res) => {
   const { userId } = req.body;
 
   const user = await db.User.findByPk(userId);
-  if (!user) return res.status(404).json({ message: "Not found" });
+  if (!user) return res.status(404).json({ message: "Compte non trouvé" });
 
   user.is_active = false;
   await user.save();
 
-  res.json({ message: "Deactivated" });
+  res.json({ message: "Désactivé" });
 };
 
 export const getAllUsers = async (req, res) => {

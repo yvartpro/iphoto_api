@@ -6,10 +6,10 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await db.User.findOne({ where: { email } });
-  if (!user) return res.status(404).json({ message: "User not found" });
+  if (!user) return res.status(404).json({ message: "Compte non trouvé" });
 
   const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+  if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
@@ -29,15 +29,15 @@ export const validateLicense = async (req, res) => {
   }
 
   if (user.expires_at && new Date(user.expires_at) < new Date()) {
-    return res.json({ allowed: false, message: "Expired" });
+    return res.json({ allowed: false, message: "Expiré" });
   }
 
   if (!user.device_id) {
     user.device_id = device_id;
     await user.save();
   } else if (user.device_id !== device_id) {
-    return res.json({ allowed: false, message: "Device mismatch" });
+    return res.json({ allowed: false, message: "Appareil non autorisé" });
   }
 
-  return res.json({ allowed: true, message: "OK" });
+  return res.json({ allowed: true, message: "Autorisé" });
 };

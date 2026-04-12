@@ -12,7 +12,7 @@ const app = express();
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({ message: "iPhoto API is running" });
+  res.json({ message: "iPhoto API est en cours d'exécution" });
 });
 app.use("/api", userRoutes);
 app.use("/api/admin", adminRoutes);
@@ -23,7 +23,7 @@ const start = async () => {
   try {
     await db.sequelize.sync();
     app.listen(process.env.PORT || 3000, () => {
-      console.log("Server running");
+      console.log("Serveur en cours d'exécution");
     });
   } catch (err) {
     console.error(err);
