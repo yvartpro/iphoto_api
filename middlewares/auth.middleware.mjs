@@ -10,6 +10,7 @@ export const authMiddleware = async (req, res, next) => {
     const user = await db.User.findByPk(decoded.id);
 
     if (!user) return res.status(401).json({ message: "Compte non trouvé" });
+    if (!user.is_active) return res.status(403).json({ message: "Compte désactivé" });
 
     req.user = user;
     next();

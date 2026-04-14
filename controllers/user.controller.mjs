@@ -3,9 +3,12 @@ import jwt from "jsonwebtoken";
 import db from "../models/index.mjs";
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, phone, password } = req.body;
 
-  const user = await db.User.findOne({ where: { email } });
+  if (!email && !phone) return res.status(400).json({ message: "Email ou téléphone requis" });
+
+  const whereClause = email ? { email } : { phone };
+  const user = await db.User.findOne({ where: whereClause });
   if (!user) return res.status(404).json({ message: "Compte non trouvé" });
 
   const ok = await bcrypt.compare(password, user.password);
