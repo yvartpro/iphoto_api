@@ -11,11 +11,11 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/iphoto/", (req, res) => {
   res.json({ message: "iPhoto API est en cours d'exécution" });
 });
-app.use("/api", userRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/iphoto/api", userRoutes);
+app.use("/iphoto/api/admin", adminRoutes);
 
 app.use(errorMiddleware);
 
