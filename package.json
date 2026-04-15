@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.mjs",
     "dev": "nodemon app.mjs",
+    "sync": "node sync.mjs",
     "seed": "node seed.mjs"
   },
   "dependencies": {
