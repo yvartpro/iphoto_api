@@ -3,16 +3,20 @@ import jwt from "jsonwebtoken";
 import db from "../models/index.mjs";
 
 export const login = async (req, res) => {
-  const { email, phone, password } = req.body;
+  const { email, phone, device_id } = req.body;
 
   if (!email && !phone) return res.status(400).json({ message: "Email ou téléphone requis" });
 
   const whereClause = email ? { email } : { phone };
   const user = await db.User.findOne({ where: whereClause });
-  if (!user) return res.status(404).json({ message: "Compte non trouvé" });
 
-  const ok = await bcrypt.compare(password, user.password) && user.role === "admin";
-  if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
+  try {
+    if (!user) throw new Error("Compte non trouvé");
+    if (!user.is_active) throw new Error("Compte désactivé");
+    if (user.device_id !== device_id) throw new Error("Appareil non autorisé");
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
