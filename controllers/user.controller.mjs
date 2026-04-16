@@ -20,7 +20,16 @@ export const login = async (req, res) => {
     { expiresIn: "7d" }
   );
 
-  res.json({ token, "message":"Connexion réussie" });
+  res.json({
+    token: token,
+    "message": "Connexion réussie",
+    user: {
+      id: user.id,
+      phone: user.phone,
+      role: user.role,
+      is_active: user.is_active
+    }
+  });
 };
 
 export const validateLicense = async (req, res) => {
