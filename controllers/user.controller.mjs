@@ -21,13 +21,16 @@ export const login = async (req, res) => {
   );
 
   res.json({
-    token: token,
-    "message": "Connexion réussie",
-    user: {
-      id: user.id,
-      phone: user.phone,
-      role: user.role,
-      is_active: user.is_active
+    success: true,
+    message: "Connexion réussie",
+    data: {
+      token: token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        role: user.role,
+        is_active: user.is_active
+      }
     }
   });
 };
