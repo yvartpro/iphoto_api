@@ -11,7 +11,7 @@ export const login = async (req, res) => {
   const user = await db.User.findOne({ where: whereClause });
   if (!user) return res.status(404).json({ message: "Compte non trouvé" });
 
-  const ok = await bcrypt.compare(password, user.password);
+  const ok = await bcrypt.compare(password, user.password) && user.role === "admin";
   if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
 
   const token = jwt.sign(
