@@ -13,7 +13,14 @@ export const login = async (req, res) => {
   try {
     if (!user) throw new Error("Compte non trouvé");
     if (!user.is_active) throw new Error("Compte désactivé");
-    if (user.device_id !== device_id) throw new Error("Appareil non autorisé");
+    const isNewUser = !user.device_id
+    const isSameDevice = user.device_id == device_id
+    if (isNewUser) {
+      await user.update({ device_id: device_id })
+    }
+    else if (!isSameDevice) {
+      throw new Error("Appareil non autorisé")
+    }
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }

@@ -2,14 +2,13 @@ import bcrypt from "bcrypt";
 import db from "../models/index.mjs";
 
 export const createUser = async (req, res) => {
-  const { email, phone, password, device_id } = req.body;
+  const { email, phone, password } = req.body;
 
   const hash = await bcrypt.hash(password, 10);
 
   const user = await db.User.create({
     email,
     phone,
-    device_id,
     password: hash,
     is_active: true,
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
