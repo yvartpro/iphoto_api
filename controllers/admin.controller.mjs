@@ -4,15 +4,22 @@ import db from "../models/index.mjs";
 export const createUser = async (req, res) => {
   const { email, phone, password } = req.body;
 
-  const hash = await bcrypt.hash(password, 10);
+  if (!email && !phone) {
+    return res.status(400).json({ message: "Email ou numéro de téléphone requis" });
+  }
 
-  const user = await db.User.create({
+  const userData = {
     email,
     phone,
-    password: hash,
     is_active: true,
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-  });
+  };
+
+  if (password) {
+    userData.password = await bcrypt.hash(password, 10);
+  }
+
+  const user = await db.User.create(userData);
 
   res.json(user);
 };

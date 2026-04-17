@@ -21,7 +21,7 @@ app.use(errorMiddleware);
 
 const start = async () => {
   try {
-    await db.sequelize.sync();
+    await db.sequelize.sync({ alter: true });
     app.listen(process.env.PORT || 3000, () => {
       console.log("Serveur en cours d'exécution");
     });
