@@ -22,7 +22,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
 
           script: |
-            cd /home/deploy/apps/giraso
+            cd /home/yves/apps/giraso
 
             git pull origin main
 
