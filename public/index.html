@@ -72,7 +72,7 @@
   }
 
   /* Reveal on scroll */
-  .reveal{ opacity:0; transform:translateY(28px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+  .reveal{ opacity:1; transform:translateY(0); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
   .reveal.is-visible{ opacity:1; transform:translateY(0); }
   .reveal-delay-1{ transition-delay:.08s; }
   .reveal-delay-2{ transition-delay:.16s; }
@@ -93,8 +93,8 @@
   /* Floating shapes */
   @keyframes float-slow{ 0%,100%{ transform:translateY(0) rotate(0deg);} 50%{ transform:translateY(-22px) rotate(3deg);} }
   @keyframes float-slower{ 0%,100%{ transform:translateY(0) translateX(0);} 50%{ transform:translateY(18px) translateX(-14px);} }
-  .float-a{ animation:float-slow 9s ease-in-out infinite; }
-  .float-b{ animation:float-slower 12s ease-in-out infinite; }
+  .float-a{ animation:none; }
+  .float-b{ animation:none; }
 
   /* Gradient animated backdrop */
   @keyframes gradient-shift{
@@ -104,8 +104,8 @@
   }
   .animated-gradient{
     background:linear-gradient(120deg,#07150d, #0a3d1f 35%, #124d29 55%, #07150d 100%);
-    background-size:200% 200%;
-    animation:gradient-shift 16s ease infinite;
+    background-size:100% 100%;
+    animation:none;
   }
 
   /* Woven / imigongo-inspired geometric motif — used as signature texture */
@@ -151,7 +151,7 @@
 
   /* marquee for tech badges */
   @keyframes marquee{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
-  .marquee-track{ animation:marquee 32s linear infinite; }
+  .marquee-track{ animation:none; }
   .marquee-wrap:hover .marquee-track{ animation-play-state:paused; }
 
   /* number counter font */
@@ -182,7 +182,7 @@
 <div id="scroll-progress"></div>
 
 <!-- ================= NAV ================= -->
-<header id="site-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+<header id="site-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-[#07150d]/95 text-white">
   <nav class="max-w-7xl mx-auto px-6 lg:px-10">
     <div id="nav-inner" class="flex items-center justify-between py-5 transition-all duration-500">
       <a href="#home" class="flex items-center gap-2.5 group">
@@ -191,9 +191,9 @@
           <path d="M20 2 V38 M4 11 L36 29 M36 11 L4 29" stroke="currentColor" stroke-width="1" class="text-gold" opacity="0.7"/>
           <circle cx="20" cy="20" r="4.5" fill="currentColor" class="text-emerald"/>
         </svg>
-        <span class="font-display text-xl tracking-tight nav-logo-text">Giraso</span>
+        <span class="font-display text-xl tracking-tight nav-logo-text text-white">Giraso</span>
       </a>
-      <div class="hidden lg:flex items-center gap-9 mono text-[13px] uppercase tracking-wider nav-links-text">
+      <div class="hidden lg:flex items-center gap-9 mono text-[13px] uppercase tracking-wider nav-links-text text-white">
         <a href="#about" class="nav-link">About</a>
         <a href="#values" class="nav-link">Values</a>
         <a href="#services" class="nav-link">Services</a>
@@ -224,7 +224,7 @@
 </header>
 
 <!-- ================= HERO ================= -->
-<section id="home" class="relative min-h-screen flex items-center animated-gradient weave-pattern overflow-hidden">
+<section id="home" class="relative min-h-screen flex items-center bg-[#07150d] animated-gradient weave-pattern overflow-hidden">
 
   <!-- floating abstract SVGs -->
   <svg class="absolute -top-10 -left-16 w-72 h-72 opacity-30 float-a" viewBox="0 0 200 200" fill="none"><path d="M100 10 L186 55 V145 L100 190 L14 145 V55 Z" stroke="#C9A227" stroke-width="1"/><path d="M100 10 V190 M14 55 L186 145 M186 55 L14 145" stroke="#C9A227" stroke-width="0.5"/></svg>
@@ -361,7 +361,7 @@
         <p class="text-slate-500 leading-relaxed">We look beyond the brief to what's next — designing for where our clients are headed, not just where they are.</p>
       </div>
 
-      <!-- Giruruo -->
+      <!-- Girurugo -->
       <div class="reveal reveal-delay-5 lift group border border-slate-100 rounded-3xl p-8 bg-ivory/60">
         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" class="mb-6 text-emerald transition-transform duration-500 group-hover:-rotate-6">
           <circle cx="15" cy="16" r="5" stroke="currentColor" stroke-width="1.4"/>
@@ -369,7 +369,7 @@
           <circle cx="23" cy="32" r="5" stroke="currentColor" stroke-width="1.4"/>
           <path d="M18 20 L21 28 M28 20 L25 28 M20 16 H26" stroke="currentColor" stroke-width="1.2"/>
         </svg>
-        <h3 class="font-display text-2xl text-forest">Giruruo</h3>
+        <h3 class="font-display text-2xl text-forest">Girurugo</h3>
         <p class="mono text-[11px] uppercase tracking-widest text-gold mt-1 mb-3">Family, Unity &amp; Legacy</p>
         <p class="text-slate-500 leading-relaxed">We work as one team with our clients — collaborative, transparent, and invested in a shared legacy.</p>
       </div>
@@ -388,20 +388,41 @@
       <p class="mt-5 text-white/60 text-lg font-light leading-relaxed">From first sketch to production infrastructure — one team, every layer.</p>
     </div>
 
-    <div id="services-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <div id="services-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal lift group glass rounded-2xl p-7">
+        <img src="assets/mobile.png" alt="Mobile Applications icon" width="40" height="40" class="mb-5">
+        <h3 class="font-display text-xl text-white">Mobile Applications</h3>
+        <p class="text-white/60 mt-2 text-sm leading-relaxed">Native and cross-platform apps engineered for performance, reliability, and polished user experience.</p>
+      </div>
+      <div class="reveal lift group glass rounded-2xl p-7">
+        <img src="assets/site.png" alt="Websites icon" width="40" height="40" class="mb-5">
+        <h3 class="font-display text-xl text-white">Websites</h3>
+        <p class="text-white/60 mt-2 text-sm leading-relaxed">Fast, accessible websites with modern design systems that showcase your brand and convert visitors.</p>
+      </div>
+      <div class="reveal lift group glass rounded-2xl p-7">
+        <img src="assets/app_web.png" alt="Web Applications icon" width="40" height="40" class="mb-5">
+        <h3 class="font-display text-xl text-white">Web Applications</h3>
+        <p class="text-white/60 mt-2 text-sm leading-relaxed">Robust web applications with clean architecture, scalable APIs, and enterprise-ready workflows.</p>
+      </div>
+      <div class="reveal lift group glass rounded-2xl p-7">
+        <img src="assets/block.png" alt="Blockchain Development icon" width="40" height="40" class="mb-5">
+        <h3 class="font-display text-xl text-white">Blockchain Development</h3>
+        <p class="text-white/60 mt-2 text-sm leading-relaxed">Smart contracts, secure ledgers, and decentralized applications built for real business workflows.</p>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- ================= PORTFOLIO ================= -->
-<section id="work" class="py-32 px-6 lg:px-10 bg-ivory">
+<section id="work" class="py-24 px-6 lg:px-10 bg-ivory">
   <div class="max-w-7xl mx-auto">
-    <div class="max-w-2xl mb-16 reveal">
+    <div class="max-w-2xl mb-8 reveal">
       <span class="mono text-xs uppercase tracking-[0.2em] text-emerald">Selected Work</span>
       <h2 class="font-display text-4xl sm:text-5xl mt-4 text-forest">Products doing real work.</h2>
       <p class="mt-5 text-slate-500 text-lg font-light leading-relaxed">Across sectors that matter most to the continent's growth.</p>
     </div>
 
-    <div id="portfolio-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
+    <div id="portfolio-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5"></div>
   </div>
 </section>
 
@@ -543,22 +564,22 @@
   <svg class="absolute top-0 right-0 w-96 h-96 opacity-10 float-a" viewBox="0 0 200 200" fill="none"><path d="M100 10 L186 55 V145 L100 190 L14 145 V55 Z" stroke="#fff" stroke-width="1"/></svg>
   <div class="max-w-4xl mx-auto text-center relative">
     <span class="mono text-xs uppercase tracking-[0.2em] text-gold reveal">Let's build together</span>
-    <h2 class="reveal reveal-delay-1 font-display text-4xl sm:text-6xl mt-5 text-white leading-tight">
+    <h2 class="reveal reveal-delay-1 font-display text-4xl sm:text-6xl mt-5 text-forest leading-tight">
       Have an idea worth <span class="italic text-gold">rooting</span> for?
     </h2>
-    <p class="reveal reveal-delay-2 mt-6 text-white/70 text-lg font-light max-w-xl mx-auto">Tell us where you want to go. We'll bring the engineering, the design, and a philosophy built to last.</p>
+    <p class="reveal reveal-delay-2 mt-6 text-emerald text-lg font-light max-w-xl mx-auto">Tell us where you want to go. We'll bring the engineering, the design, and a philosophy built to last.</p>
     <form id="contact-form" class="reveal reveal-delay-3 mt-12 max-w-xl mx-auto grid sm:grid-cols-2 gap-4 text-left">
       <div class="sm:col-span-1">
-        <label for="cf-name" class="sr-only">Name</label>
-        <input id="cf-name" required type="text" placeholder="Your name" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-white placeholder-white/50 focus:bg-white/15 transition-colors outline-none">
+        <label for="cf-name" class="sr-only text-forest">Name</label>
+        <input id="cf-name" required type="text" placeholder="Your name" class="w-full bg-white/10 border border-forest focus:border-white/20 rounded-xl px-4 py-3.5 text-emerald placeholder-forest transition-colors outline-none">
       </div>
       <div class="sm:col-span-1">
-        <label for="cf-email" class="sr-only">Email</label>
-        <input id="cf-email" required type="email" placeholder="Email address" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-white placeholder-white/50 focus:bg-white/15 transition-colors outline-none">
+        <label for="cf-email" class="sr-only text-forest">Email</label>
+        <input id="cf-email" required type="email" placeholder="Email address" class="w-full bg-white/10 border border-forest focus:border-white/20 rounded-xl px-4 py-3.5 text-emerald placeholder-forest transition-colors outline-none">
       </div>
       <div class="sm:col-span-2">
-        <label for="cf-msg" class="sr-only">Message</label>
-        <textarea id="cf-msg" required rows="3" placeholder="Tell us about your project" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3.5 text-white placeholder-white/50 focus:bg-white/15 transition-colors outline-none resize-none"></textarea>
+        <label for="cf-msg" class="sr-only text-forest">Message</label>
+        <textarea id="cf-msg" required rows="3" placeholder="Tell us about your project" class="w-full bg-white/10 border border-forest focus:border-white/20 rounded-xl px-4 py-3.5 text-emerald placeholder-forst transition-colors outline-none resize-none"></textarea>
       </div>
       <button type="submit" class="btn-ripple sm:col-span-2 inline-flex items-center justify-center gap-2 bg-white text-forest font-medium px-7 py-4 rounded-full hover:bg-gold transition-colors duration-300">
         Send message
@@ -629,6 +650,7 @@ function onScroll(){
 
   if(h.scrollTop > 40){
     siteNav.classList.add('bg-ivory/90','backdrop-blur-md','shadow-sm');
+    siteNav.classList.remove('bg-[#07150d]/95','text-white');
     navInner.classList.add('py-3');
     navInner.classList.remove('py-5');
     navLogoText.classList.add('text-forest');
@@ -636,6 +658,7 @@ function onScroll(){
     navLinksText.forEach(el => { el.classList.add('text-slate-700'); el.classList.remove('text-white'); });
   } else {
     siteNav.classList.remove('bg-ivory/90','backdrop-blur-md','shadow-sm');
+    siteNav.classList.add('bg-[#07150d]/95','text-white');
     navInner.classList.remove('py-3');
     navInner.classList.add('py-5');
     navLogoText.classList.remove('text-forest');
@@ -728,21 +751,13 @@ document.getElementById('contact-form').addEventListener('submit', function(e){
 
 /* ---------- Services data ---------- */
 const services = [
-  {name:'Software Engineering', desc:'Robust, scalable systems built to last, from monoliths to microservices.', icon:'<path d="M8 26 L2 20 L8 14 M32 14 L38 20 L32 26 M23 8 L17 32" stroke-linecap="round" stroke-linejoin="round"/>'},
-  {name:'Mobile Applications', desc:'Native and cross-platform apps engineered for speed and delight.', icon:'<rect x="12" y="4" width="16" height="32" rx="3"/><circle cx="20" cy="30" r="1.4" fill="currentColor"/>'},
-  {name:'Web Development', desc:'Fast, accessible, beautifully engineered web platforms and products.', icon:'<rect x="4" y="8" width="32" height="24" rx="2"/><path d="M4 15 H36"/><circle cx="9" cy="11.5" r="1" fill="currentColor"/>'},
-  {name:'Artificial Intelligence', desc:'Practical AI and machine learning built into real business workflows.', icon:'<circle cx="20" cy="20" r="6"/><path d="M20 4 V10 M20 30 V36 M4 20 H10 M30 20 H36 M9 9 L13 13 M31 9 L27 13 M9 31 L13 27 M31 31 L27 27"/>'},
-  {name:'Blockchain Solutions', desc:'Secure, transparent ledgers and smart contracts for real use cases.', icon:'<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="22" y="6" width="12" height="12" rx="2"/><rect x="14" y="22" width="12" height="12" rx="2"/><path d="M18 12 H22 M12 18 V22 M28 18 V22"/>'},
-  {name:'FinTech', desc:'Payments, banking and financial infrastructure built for trust and scale.', icon:'<circle cx="20" cy="20" r="15"/><path d="M20 12 V28 M15 16 a5 5 0 0 1 10 0 c0 6 -10 4 -10 10 a5 5 0 0 0 10 0" fill="none"/>'},
-  {name:'UI/UX Design', desc:'Interfaces that feel effortless — researched, tested, refined.', icon:'<path d="M6 34 L14 34 L34 14 a4 4 0 0 0 -6 -6 L8 28 Z"/><path d="M22 10 L28 16"/>'},
-  {name:'Cloud Infrastructure', desc:'Resilient, observable infrastructure across AWS, GCP and beyond.', icon:'<path d="M12 26 a7 7 0 0 1 1 -13.9 A9 9 0 0 1 30 15 a6 6 0 0 1 -1 12 H12 Z"/>'},
-  {name:'Digital Transformation', desc:'Modernizing legacy systems into resilient, future-ready platforms.', icon:'<path d="M8 12 a12 12 0 0 1 20 -4 M32 28 a12 12 0 0 1 -20 4" stroke-linecap="round"/><path d="M28 6 V10 H24 M12 34 V30 H16"/>'},
-  {name:'API Development', desc:'Well-documented, versioned APIs that partners can build on confidently.', icon:'<circle cx="10" cy="20" r="4"/><circle cx="30" cy="10" r="4"/><circle cx="30" cy="30" r="4"/><path d="M14 20 H30 M14 20 L26 10 M14 20 L26 30"/>'},
-  {name:'Cybersecurity', desc:'Defense-in-depth security reviews, audits and hardened deployments.', icon:'<path d="M20 4 L34 10 V20 c0 10 -6 14 -14 16 c-8 -2 -14 -6 -14 -16 V10 Z"/><path d="M14 20 L18 24 L27 15"/>'},
-  {name:'Consulting', desc:'Strategic guidance on architecture, product and technology roadmaps.', icon:'<circle cx="20" cy="14" r="6"/><path d="M8 34 c0 -8 6 -12 12 -12 s12 4 12 12"/>'},
+  {name:'Mobile Applications', desc:'Native and cross-platform apps engineered for performance, reliability, and polished user experience.', icon:'<rect x="12" y="4" width="16" height="32" rx="3"/><circle cx="20" cy="30" r="1.4" fill="currentColor"/>'},
+  {name:'Websites', desc:'Fast, accessible websites with modern design systems that showcase your brand and convert visitors.', icon:'<rect x="4" y="8" width="32" height="24" rx="2"/><path d="M4 15 H36"/><circle cx="9" cy="11.5" r="1" fill="currentColor"/>'},
+  {name:'Web Applications', desc:'Robust web applications with clean architecture, scalable APIs, and enterprise-ready workflows.', icon:'<path d="M8 12h24v16H8z"/><path d="M8 18h24M8 24h24" stroke-linecap="round"/>'},
 ];
 const servicesGrid = document.getElementById('services-grid');
-services.forEach((s,i)=>{
+if (!servicesGrid.hasChildNodes()) {
+  services.forEach((s,i)=>{
   const div = document.createElement('div');
   div.className = `reveal reveal-delay-${(i%6)+1} lift group glass rounded-2xl p-7`;
   div.innerHTML = `
@@ -752,32 +767,30 @@ services.forEach((s,i)=>{
   `;
   servicesGrid.appendChild(div);
 });
+}
 
 /* ---------- Portfolio data ---------- */
 const projects = [
-  {cat:'FinTech', title:'Amanira Pay', desc:'A mobile-first payments platform connecting merchants and customers across East Africa.', tech:['React Native','Node.js','PostgreSQL'], color1:'#15803d', color2:'#0a3d1f'},
-  {cat:'Healthcare', title:'Kaze Health', desc:'A patient records and telemedicine platform serving clinics in rural regions.', tech:['Next.js','NestJS','MongoDB'], color1:'#0a3d1f', color2:'#146c34'},
-  {cat:'Government', title:'GovConnect', desc:'Digital identity and public-service portal streamlining citizen services.', tech:['TypeScript','AWS','PostgreSQL'], color1:'#146c34', color2:'#07150d'},
-  {cat:'Agriculture', title:'Terra Grow', desc:'Smart agriculture platform with IoT sensor data and yield forecasting for cooperatives.', tech:['Flutter','Python','Firebase'], color1:'#0f5c2c', color2:'#0a3d1f'},
-  {cat:'Education', title:'Somesha', desc:'An e-learning platform bringing accredited curricula to students across the region.', tech:['React','Laravel','MySQL'], color1:'#15803d', color2:'#07150d'},
-  {cat:'Logistics', title:'Njira Freight', desc:'Real-time fleet tracking and route optimization for regional logistics providers.', tech:['Kotlin','Node.js','Google Cloud'], color1:'#0a3d1f', color2:'#15803d'},
+  {cat:'Business', title:'Resilience Masters', desc:'A guide and funnel for Network Marketing presentation.', tech:['Vuejs','Express.js','MySQL'], color1:'#15803d', color2:'#0a3d1f'},
+  {cat:'Business', title:'Network Marketing Academia', desc:'A platform for Network Marketing education and resources.', tech:['Vuejs','Express.js','MySQL'], color1:'#0a3d1f', color2:'#146c34'},
+  {cat:'Media', title:'iPhoto', desc:'An image compressor with advanced optimization, keeping visual quality while reducing file size near 100%.', tech:['Kotlin'], color1:'#146c34', color2:'#07150d'},
 ];
 const portfolioGrid = document.getElementById('portfolio-grid');
 projects.forEach((p,i)=>{
   const div = document.createElement('div');
-  div.className = `reveal reveal-delay-${(i%6)+1} lift group border border-slate-100 rounded-3xl overflow-hidden bg-white`;
+  div.className = `reveal reveal-delay-${(i%6)+1} lift group border border-slate-100 rounded-2xl overflow-hidden bg-white`;
   div.innerHTML = `
-    <div class="h-48 relative overflow-hidden" style="background:linear-gradient(135deg, ${p.color1}, ${p.color2})">
+    <div class="h-36 relative overflow-hidden" style="background:linear-gradient(135deg, ${p.color1}, ${p.color2})">
       <svg class="absolute inset-0 w-full h-full opacity-25 transition-transform duration-700 group-hover:scale-110" viewBox="0 0 300 200" fill="none">
         <circle cx="250" cy="30" r="60" stroke="#fff" stroke-width="0.8"/>
         <path d="M0 160 L80 100 L150 140 L230 80 L300 120" stroke="#C9A227" stroke-width="1"/>
       </svg>
       <span class="absolute top-4 left-4 mono text-[10px] uppercase tracking-wider text-white/90 bg-black/20 px-3 py-1 rounded-full">${p.cat}</span>
     </div>
-    <div class="p-7">
+    <div class="p-5">
       <h3 class="font-display text-xl text-forest">${p.title}</h3>
       <p class="text-slate-500 text-sm mt-2 leading-relaxed">${p.desc}</p>
-      <div class="flex flex-wrap gap-2 mt-5">
+      <div class="flex flex-wrap gap-2 mt-4">
         ${p.tech.map(t=>`<span class="mono text-[10px] uppercase tracking-wider bg-slate-50 border border-slate-100 text-slate-500 px-2.5 py-1 rounded-full">${t}</span>`).join('')}
       </div>
     </div>
@@ -786,7 +799,7 @@ projects.forEach((p,i)=>{
 });
 
 /* ---------- Tech marquee ---------- */
-const techs = ['HTML','CSS','Tailwind','JavaScript','TypeScript','React','Next.js','Node.js','Express','NestJS','Laravel','Kotlin','Android','Flutter','Docker','PostgreSQL','MongoDB','Firebase','AWS','Google Cloud','AI','Blockchain'];
+const techs = ['HTML','CSS','Tailwind','JavaScript','Node.js','Express','Sequelize','Kotlin','Android', 'MySQL','AI','Blockchain'];
 const track = document.getElementById('tech-track');
 function renderTechs(){
   let html = '';
