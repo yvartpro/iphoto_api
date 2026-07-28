@@ -1,54 +1,50 @@
-import bcrypt from "bcrypt";
 import db from "../models/index.mjs";
 
 export const createUser = async (req, res) => {
-  const { email, phone, password } = req.body;
+  const { device_id, plan } = req.body;
 
-  if (!email && !phone) {
-    return res.status(400).json({ message: "Email ou numéro de téléphone requis" });
+  if (!device_id) {
+    return res.status(400).json({ message: "Device ID requis" });
   }
 
-  const userData = {
-    email,
-    phone,
-    is_active: true,
+  const device = await db.Device.create({
+    device_id,
+    plan: plan || "FREE",
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-  };
+  });
 
-  if (password) {
-    userData.password = await bcrypt.hash(password, 10);
-  }
-
-  const user = await db.User.create(userData);
-
-  res.json(user);
+  res.json(device);
 };
 
 export const extendLicense = async (req, res) => {
-  const { userId } = req.body;
+  const { deviceId } = req.body;
 
-  const user = await db.User.findByPk(userId);
-  if (!user) return res.status(404).json({ message: "Compte non trouvé" });
+  const device = await db.Device.findOne({ where: { device_id: deviceId } });
+  if (!device) return res.status(404).json({ message: "Appareil non trouvé" });
 
-  user.expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  await user.save();
+  let currentExpiry = device.expires_at ? new Date(device.expires_at) : new Date();
+  if (currentExpiry < new Date()) currentExpiry = new Date();
 
-  res.json({ message: "Prolongé" });
+  currentExpiry.setMonth(currentExpiry.getMonth() + 1);
+  device.expires_at = currentExpiry;
+  await device.save();
+
+  res.json({ message: "Prolongé d'un mois" });
 };
 
 export const deactivateUser = async (req, res) => {
-  const { userId } = req.body;
+  const { deviceId } = req.body;
 
-  const user = await db.User.findByPk(userId);
-  if (!user) return res.status(404).json({ message: "Compte non trouvé" });
+  const device = await db.Device.findOne({ where: { device_id: deviceId } });
+  if (!device) return res.status(404).json({ message: "Appareil non trouvé" });
 
-  user.is_active = false;
-  await user.save();
+  device.expires_at = new Date(); // Expire immediately
+  await device.save();
 
   res.json({ message: "Désactivé" });
 };
 
 export const getAllUsers = async (req, res) => {
-  const users = await db.User.findAll();
-  res.json(users);
+  const devices = await db.Device.findAll();
+  res.json(devices);
 };

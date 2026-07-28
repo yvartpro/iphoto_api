@@ -1,6 +1,7 @@
 import express from "express";
 import { isAdmin } from "../middlewares/role.middleware.mjs";
 import { authMiddleware } from "../middlewares/auth.middleware.mjs";
+import { adminLogin } from "../controllers/admin_auth.controller.mjs";
 import {
   createUser,
   extendLicense,
@@ -9,6 +10,8 @@ import {
 } from "../controllers/admin.controller.mjs";
 
 const router = express.Router();
+
+router.post("/login", adminLogin);
 
 router.use(authMiddleware);
 router.use(isAdmin);

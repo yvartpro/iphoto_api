@@ -7,12 +7,11 @@ export const authMiddleware = async (req, res, next) => {
     if (!token) return res.status(401).json({ message: "Token non fourni" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await db.User.findByPk(decoded.id);
+    const admin = await db.Admin.findByPk(decoded.id);
 
-    if (!user) return res.status(401).json({ message: "Compte non trouvé" });
-    if (!user.is_active) return res.status(403).json({ message: "Compte désactivé" });
+    if (!admin) return res.status(401).json({ message: "Administrateur non trouvé" });
 
-    req.user = user;
+    req.admin = admin;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Accès refusé" });
