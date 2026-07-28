@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import db from "./models/index.mjs";
-import userRoutes from "./routes/user.routes.mjs";
+import iphotoRoutes from "./routes/iphoto.routes.mjs";
 import adminRoutes from "./routes/admin.routes.mjs";
 import { errorMiddleware } from "./middlewares/error.middleware.mjs";
 
@@ -28,11 +28,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
-
-// API routes
-app.use("/api", userRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/iphoto/api", iphotoRoutes);
+app.use("/iphoto/api/admin", adminRoutes);
 
 
 // Error handler (must be last)
@@ -42,12 +39,9 @@ app.use(errorMiddleware);
 // Start server
 const start = async () => {
   try {
-    await db.sequelize.sync();
-
-    const PORT = process.env.PORT || 3000;
-
-    app.listen(PORT, "127.0.0.1", () => {
-      console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
+    await db.sequelize.sync({ alter: true });
+    app.listen(process.env.PORT || 3000, () => {
+      console.log("Serveur en cours d'exécution");
     });
 
   } catch (err) {
