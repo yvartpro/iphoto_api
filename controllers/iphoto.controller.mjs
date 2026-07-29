@@ -10,6 +10,7 @@ const PLANS = {
 
 export const createPayment = async (req, res) => {
     const { deviceId, planKey, cardNumber } = req.body;
+    console.log("Create Payment Request:", { deviceId, planKey, cardNumber: "****" });
 
     if (!PLANS[planKey]) {
         return res.status(400).json({ success: false, message: "Plan invalide" });
@@ -34,6 +35,7 @@ export const createPayment = async (req, res) => {
             description: `Subscription ${planKey} iPhoto`
         };
 
+        console.log("Calling VovoTapesa API...");
         const response = await fetch(vovotapesaUrl, {
             method: 'POST',
             headers: {
@@ -44,24 +46,49 @@ export const createPayment = async (req, res) => {
             body: JSON.stringify(payload)
         });
 
-        const vtData = await response.json();
+        const text = await response.text();
+        console.log("VovoTapesa Raw Response:", text);
+console.log(JSON.parse(text))
+        let vtData;
+        try {
+            vtData = JSON.parse(text);
+        } catch (e) {
+            throw new Error(`VovoTapesa returned non-JSON response: ${text.substring(0, 100)}`);
+        }
 
         if (!response.ok) {
             return res.status(response.status).json({
                 success: false,
-                message: vtData.message || "Erreur lors de l'initialisation du paiement",
+                message: JSON.stringify(vtData),
+                error: vtData
             });
         }
 
-        // Create a pending payment record using VovoTapesa's payment_id
-        await db.Payment.create({
-            device_id: deviceId,
-            transaction_id: vtData.payment_id, // Use the real payment_id from VovoTapesa
-            amount: amount,
-            plan_key: planKey,
-            status: "PENDING"
-        });
+        if (!vtData.payment_id) {
+            console.error("VovoTapesa response missing payment_id:", vtData);
+            throw new Error(`VovoTapesa API Error: Missing payment_id in response. Raw: ${JSON.stringify(vtData)}`);
+        }
 
+        if (!deviceId) {
+            console.warn("Device ID missing in request, using 'unknown'");
+        }
+
+        // Create a pending payment record using VovoTapesa's payment_id
+        console.log("Saving payment to database...");
+        try {
+            await db.Payment.create({
+                device_id: deviceId || "unknown",
+                transaction_id: vtData.payment_id,
+                amount: amount,
+                plan_key: planKey,
+                status: "PENDING"
+            });
+        } catch (dbError) {
+            console.error("Database Error saving payment:", dbError);
+            throw new Error(`Database Error: ${dbError.message}`);
+        }
+
+        console.log("Payment initiated successfully:", vtData.payment_id);
         res.json({
             success: true,
             data: {
@@ -72,7 +99,11 @@ export const createPayment = async (req, res) => {
         });
     } catch (error) {
         console.error("Create Payment Error:", error);
-        res.status(500).json({ success: false, message: "Erreur serveur lors de l'initialisation du paiement" });
+        res.status(500).json({
+            success: false,
+            message: `Erreur serveur: ${error.message}`,
+            details: error.toString()
+        });
     }
 };
 
@@ -129,13 +160,18 @@ export const handleWebhook = async (req, res) => {
 
 export const getSubscriptionStatus = async (req, res) => {
     const { device_id } = req.params;
+    console.log("Checking subscription status for device:", device_id);
     try {
         const device = await db.Device.findOne({ where: { device_id } });
-        if (!device) return res.json({ success: true, data: { plan: "FREE", isActive: false } });
+        if (!device) {
+            console.log("Device not found in DB, returning FREE status");
+            return res.json({ success: true, data: { plan: "FREE", isActive: false, expiryDate: 0 } });
+        }
 
         const now = new Date();
         const isActive = device.expires_at && new Date(device.expires_at) > now;
 
+        console.log(`Device status: ${device.plan}, Active: ${isActive}, Expiry: ${device.expires_at}`);
         res.json({
             success: true,
             data: {
@@ -145,6 +181,7 @@ export const getSubscriptionStatus = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ success: false });
+        console.error("Get Status Error:", error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
