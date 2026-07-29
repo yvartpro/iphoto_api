@@ -49,8 +49,7 @@ export const createPayment = async (req, res) => {
         if (!response.ok) {
             return res.status(response.status).json({
                 success: false,
-                message: JSON.stringify(vtData),
-                error: vtData
+                message: vtData.message || "Erreur lors de l'initialisation du paiement",
             });
         }
 
