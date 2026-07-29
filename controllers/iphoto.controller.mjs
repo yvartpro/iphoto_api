@@ -115,6 +115,7 @@ export const createPayment = async (req, res) => {
         console.log("Saving payment to database...");
         await db.Payment.create({
             device_id: deviceId || "unknown",
+            reference: reference,
             transaction_id: paymentId,
             amount: amount,
             plan_key: planKey,
