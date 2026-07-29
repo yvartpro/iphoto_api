@@ -31,7 +31,7 @@ export const createPayment = async (req, res) => {
             amount: amount.toString(),
             currency: "USDT",
             reference: reference,
-            description: `Pay subscription ${planKey} iPhoto`
+            description: `Subscription ${planKey} iPhoto`
         };
 
         const response = await fetch(vovotapesaUrl, {
@@ -47,11 +47,10 @@ export const createPayment = async (req, res) => {
         const vtData = await response.json();
 
         if (!response.ok) {
-            console.error("VovoTapesa API Error:", vtData);
             return res.status(response.status).json({
                 success: false,
-                message: vtData.toString() || "Erreur VovoTapesa",
-                code: vtData.code
+                message: JSON.stringify(vtData),
+                error: vtData
             });
         }
 
