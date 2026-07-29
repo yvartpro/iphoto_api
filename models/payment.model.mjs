@@ -8,6 +8,11 @@ export default (sequelize) => {
       defaultValue: () => uuidv4(),
       primaryKey: true
     },
+    reference: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false
+    },
     device_id: {
       type: DataTypes.STRING,
       allowNull: false

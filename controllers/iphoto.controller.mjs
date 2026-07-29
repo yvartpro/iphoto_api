@@ -48,7 +48,7 @@ export const createPayment = async (req, res) => {
 
         const text = await response.text();
         console.log("VovoTapesa Raw Response:", text);
-console.log(JSON.parse(text))
+
         let vtData;
         try {
             vtData = JSON.parse(text);
@@ -75,25 +75,27 @@ console.log(JSON.parse(text))
 
         // Create a pending payment record using VovoTapesa's payment_id
         console.log("Saving payment to database...");
+        const payment = vtData.data
         try {
             await db.Payment.create({
+                reference: payment.reference,
                 device_id: deviceId || "unknown",
-                transaction_id: vtData.payment_id,
-                amount: amount,
+                transaction_id: payment.payment_id,
+                amount: payment.amount,
                 plan_key: planKey,
-                status: "PENDING"
+                status: payment.status
             });
         } catch (dbError) {
             console.error("Database Error saving payment:", dbError);
             throw new Error(`Database Error: ${dbError.message}`);
         }
 
-        console.log("Payment initiated successfully:", vtData.payment_id);
+        console.log("Payment initiated successfully:", payment.payment_id);
         res.json({
             success: true,
             data: {
-                paymentId: vtData.payment_id,
-                status: "PENDING",
+                paymentId: payment.payment_id,
+                status: payment.status,
                 message: "Veuillez approuver le paiement dans votre application VovoTapesa."
             }
         });
