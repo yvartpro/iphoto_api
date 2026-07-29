@@ -2,7 +2,7 @@ import db from "./models/index.mjs";
 
 console.log("Synchronizing database...");
 
-db.sequelize.sync({ alter: true })
+db.sequelize.sync()
   .then(() => {
     console.log("Database synchronized successfully.");
     process.exit(0);
