@@ -9,36 +9,37 @@ const PLANS = {
 };
 
 export const createPayment = async (req, res) => {
-    const { deviceId, planKey } = req.body;
+    const { deviceId, planKey, cardNumber } = req.body;
 
     if (!PLANS[planKey]) {
         return res.status(400).json({ success: false, message: "Plan invalide" });
     }
 
+    if (!cardNumber || cardNumber.length !== 15) {
+        return res.status(400).json({ success: false, message: "Numéro de carte VovoTapesa invalide (15 chiffres requis)" });
+    }
+
     try {
         const amount = PLANS[planKey].price;
-        const transactionId = `VT-${uuidv4().substring(0, 8).toUpperCase()}`;
+        const reference = `IPH-${uuidv4().substring(0, 8).toUpperCase()}`;
 
-        // Call VovoTapesa API to initiate payment
-        const vovotapesaUrl = `${process.env.VOVOTAPESA_BASE_URL}/api/v1/payment/create`;
+        // Call VovoTapesa API to initiate Card Payment
+        const vovotapesaUrl = `${process.env.VOVOTAPESA_BASE_URL}/merchant/api/pay`;
 
         const payload = {
-            amount: amount,
+            card_number: cardNumber,
+            amount: amount.toString(),
             currency: "USDT",
-            network: "TRC20",
-            external_reference: transactionId,
-            callback_url: process.env.WEBHOOK_URL,
-            description: `Subscription ${planKey} for device ${deviceId}`
+            reference: reference,
+            description: `Subscription ${planKey} iPhoto`
         };
 
         const response = await fetch(vovotapesaUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'api-key': process.env.VOVOTAPESA_API_KEY,
-                'secret-key': process.env.VOVOTAPESA_SECRET_KEY,
-                'X-API-KEY': process.env.VOVOTAPESA_API_KEY,
-                'X-SECRET-KEY': process.env.VOVOTAPESA_SECRET_KEY
+                'X-Api-Key': process.env.VOVOTAPESA_API_KEY,
+                'X-Secret-Key': process.env.VOVOTAPESA_SECRET_KEY
             },
             body: JSON.stringify(payload)
         });
@@ -46,13 +47,17 @@ export const createPayment = async (req, res) => {
         const vtData = await response.json();
 
         if (!response.ok) {
-            throw new Error(vtData.message || "Erreur lors de l'initialisation du paiement VovoTapesa");
+            return res.status(response.status).json({
+                success: false,
+                message: vtData.failure_reason || "Erreur VovoTapesa",
+                code: vtData.code
+            });
         }
 
-        // Create a pending payment record
+        // Create a pending payment record using VovoTapesa's payment_id
         await db.Payment.create({
             device_id: deviceId,
-            transaction_id: transactionId,
+            transaction_id: vtData.payment_id, // Use the real payment_id from VovoTapesa
             amount: amount,
             plan_key: planKey,
             status: "PENDING"
@@ -61,49 +66,44 @@ export const createPayment = async (req, res) => {
         res.json({
             success: true,
             data: {
-                transactionId: transactionId,
-                amount: amount,
-                paymentUrl: vtData.payment_url,
-                usdtAddress: vtData.address || vtData.usdt_address,
-                message: "Paiement initialisé avec succès"
+                paymentId: vtData.payment_id,
+                status: "PENDING",
+                message: "Veuillez approuver le paiement dans votre application VovoTapesa."
             }
         });
     } catch (error) {
         console.error("Create Payment Error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: "Erreur serveur lors de l'initialisation du paiement" });
     }
 };
 
 export const handleWebhook = async (req, res) => {
-    const signature = req.headers['x-vovo-signature'];
+    const signature = req.headers['x-vovotapesa-signature'];
     const payload = JSON.stringify(req.body);
 
-    // Verify signature if webhook secret is provided
     if (process.env.VOVOTAPESA_WEBHOOK_SECRET && signature) {
-        const hmac = crypto.createHmac('sha256', process.env.VOVOTAPESA_WEBHOOK_SECRET);
-        const digest = hmac.update(payload).digest('hex');
+        // VovoTapesa signature format is sha256=<hmac_hex>
+        const expectedSignature = `sha256=${crypto
+            .createHmac('sha256', process.env.VOVOTAPESA_WEBHOOK_SECRET)
+            .update(payload)
+            .digest('hex')}`;
 
-        if (signature !== digest) {
-            console.error("Invalid Webhook Signature");
+        if (signature !== expectedSignature) {
             return res.status(401).json({ success: false, message: "Signature invalide" });
         }
     }
 
-    const { external_reference, status } = req.body;
+    const { payment_id, status } = req.body;
 
     try {
-        const payment = await db.Payment.findOne({ where: { transaction_id: external_reference } });
+        const payment = await db.Payment.findOne({ where: { transaction_id: payment_id } });
 
-        if (!payment) {
-            console.error(`Transaction not found: ${external_reference}`);
-            return res.status(404).json({ success: false, message: "Transaction non trouvée" });
-        }
+        if (!payment) return res.status(404).json({ success: false });
 
-        if ((status === "COMPLETED" || status === "SUCCESS") && payment.status !== "COMPLETED") {
+        if (status === "APPROVED" && payment.status !== "COMPLETED") {
             payment.status = "COMPLETED";
             await payment.save();
 
-            // Update or create device subscription
             const [device] = await db.Device.findOrCreate({
                 where: { device_id: payment.device_id }
             });
@@ -117,35 +117,22 @@ export const handleWebhook = async (req, res) => {
             device.plan = payment.plan_key;
             device.expires_at = currentExpiry;
             await device.save();
-
-            console.log(`Subscription updated for device ${payment.device_id}: ${payment.plan_key} until ${device.expires_at}`);
+        } else if (["CANCELLED", "EXPIRED", "FAILED"].includes(status)) {
+            payment.status = "FAILED";
+            await payment.save();
         }
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Webhook Processing Error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false });
     }
 };
 
 export const getSubscriptionStatus = async (req, res) => {
     const { device_id } = req.params;
-
     try {
-        const device = await db.Device.findOne({
-            where: { device_id: device_id }
-        });
-
-        if (!device) {
-            return res.json({
-                success: true,
-                data: {
-                    plan: "FREE",
-                    expiryDate: 0,
-                    isActive: false
-                }
-            });
-        }
+        const device = await db.Device.findOne({ where: { device_id } });
+        if (!device) return res.json({ success: true, data: { plan: "FREE", isActive: false } });
 
         const now = new Date();
         const isActive = device.expires_at && new Date(device.expires_at) > now;
@@ -159,6 +146,6 @@ export const getSubscriptionStatus = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false });
     }
 };
