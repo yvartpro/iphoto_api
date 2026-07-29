@@ -64,11 +64,6 @@ export const createPayment = async (req, res) => {
             });
         }
 
-        if (!vtData.payment_id) {
-            console.error("VovoTapesa response missing payment_id:", vtData);
-            throw new Error(`VovoTapesa API Error: Missing payment_id in response. Raw: ${JSON.stringify(vtData)}`);
-        }
-
         if (!deviceId) {
             console.warn("Device ID missing in request, using 'unknown'");
         }
