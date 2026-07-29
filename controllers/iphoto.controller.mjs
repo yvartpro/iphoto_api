@@ -8,6 +8,47 @@ const PLANS = {
     ANNUAL: { price: 0.6, months: 12 }
 };
 
+const syncPaymentStatus = async (paymentId) => {
+    const vovotapesaUrl = `${process.env.VOVOTAPESA_BASE_URL}/merchant/api/payment/${paymentId}`;
+
+    const response = await fetch(vovotapesaUrl, {
+        method: 'GET',
+        headers: {
+            'X-Api-Key': process.env.VOVOTAPESA_API_KEY,
+            'X-Secret-Key': process.env.VOVOTAPESA_SECRET_KEY
+        }
+    });
+
+    if (!response.ok) return null;
+
+    const vtData = await response.json();
+    const status = vtData.status || vtData.data?.status;
+
+    if (status === "APPROVED") {
+        const payment = await db.Payment.findOne({ where: { transaction_id: paymentId } });
+        if (payment && payment.status !== "COMPLETED") {
+            payment.status = "COMPLETED";
+            await payment.save();
+
+            const [device] = await db.Device.findOrCreate({
+                where: { device_id: payment.device_id }
+            });
+
+            const monthsToAdd = PLANS[payment.plan_key].months;
+            let currentExpiry = device.expires_at ? new Date(device.expires_at) : new Date();
+            if (currentExpiry < new Date()) currentExpiry = new Date();
+
+            currentExpiry.setMonth(currentExpiry.getMonth() + monthsToAdd);
+
+            device.plan = payment.plan_key;
+            device.expires_at = currentExpiry;
+            await device.save();
+            return true;
+        }
+    }
+    return false;
+};
+
 export const createPayment = async (req, res) => {
     const { deviceId, planKey, cardNumber } = req.body;
     console.log("Create Payment Request:", { deviceId, planKey, cardNumber: "****" });
@@ -24,7 +65,6 @@ export const createPayment = async (req, res) => {
         const amount = PLANS[planKey].price;
         const reference = `IPH-${uuidv4().substring(0, 8).toUpperCase()}`;
 
-        // Call VovoTapesa API to initiate Card Payment
         const vovotapesaUrl = `${process.env.VOVOTAPESA_BASE_URL}/merchant/api/pay`;
 
         const payload = {
@@ -64,33 +104,29 @@ export const createPayment = async (req, res) => {
             });
         }
 
-        if (!deviceId) {
-            console.warn("Device ID missing in request, using 'unknown'");
+        // Handle both {payment_id: ...} and {data: {payment_id: ...}}
+        const paymentId = vtData.payment_id || vtData.data?.payment_id;
+
+        if (!paymentId) {
+            console.error("VovoTapesa response missing payment_id:", vtData);
+            throw new Error(`VovoTapesa API Error: Missing payment_id in response. Raw: ${JSON.stringify(vtData)}`);
         }
 
-        // Create a pending payment record using VovoTapesa's payment_id
         console.log("Saving payment to database...");
-        const payment = vtData.data
-        try {
-            await db.Payment.create({
-                reference: payment.reference,
-                device_id: deviceId || "unknown",
-                transaction_id: payment.payment_id,
-                amount: payment.amount,
-                plan_key: planKey,
-                status: payment.status
-            });
-        } catch (dbError) {
-            console.error("Database Error saving payment:", dbError);
-            throw new Error(`Database Error: ${dbError.message}`);
-        }
+        await db.Payment.create({
+            device_id: deviceId || "unknown",
+            transaction_id: paymentId,
+            amount: amount,
+            plan_key: planKey,
+            status: "PENDING"
+        });
 
-        console.log("Payment initiated successfully:", payment.payment_id);
+        console.log("Payment initiated successfully:", paymentId);
         res.json({
             success: true,
             data: {
-                paymentId: payment.payment_id,
-                status: payment.status,
+                paymentId: paymentId,
+                status: "PENDING",
                 message: "Veuillez approuver le paiement dans votre application VovoTapesa."
             }
         });
@@ -109,7 +145,6 @@ export const handleWebhook = async (req, res) => {
     const payload = JSON.stringify(req.body);
 
     if (process.env.VOVOTAPESA_WEBHOOK_SECRET && signature) {
-        // VovoTapesa signature format is sha256=<hmac_hex>
         const expectedSignature = `sha256=${crypto
             .createHmac('sha256', process.env.VOVOTAPESA_WEBHOOK_SECRET)
             .update(payload)
@@ -127,7 +162,7 @@ export const handleWebhook = async (req, res) => {
 
         if (!payment) return res.status(404).json({ success: false });
 
-        if (status === "APPROVED" && payment.status !== "COMPLETED") {
+        if ((status === "APPROVED" || status === "SUCCESS") && payment.status !== "COMPLETED") {
             payment.status = "COMPLETED";
             await payment.save();
 
@@ -158,17 +193,34 @@ export const handleWebhook = async (req, res) => {
 export const getSubscriptionStatus = async (req, res) => {
     const { device_id } = req.params;
     console.log("Checking subscription status for device:", device_id);
+
     try {
-        const device = await db.Device.findOne({ where: { device_id } });
+        let device = await db.Device.findOne({ where: { device_id } });
+
+        const now = new Date();
+        let isActive = device?.expires_at && new Date(device.expires_at) > now;
+
+        // Fallback: If not active, check if there's a PENDING payment and sync it
+        if (!isActive) {
+            const pendingPayment = await db.Payment.findOne({
+                where: { device_id, status: "PENDING" },
+                order: [['createdAt', 'DESC']]
+            });
+
+            if (pendingPayment) {
+                console.log("Found pending payment, syncing with VovoTapesa:", pendingPayment.transaction_id);
+                const synced = await syncPaymentStatus(pendingPayment.transaction_id);
+                if (synced) {
+                    device = await db.Device.findOne({ where: { device_id } });
+                    isActive = true;
+                }
+            }
+        }
+
         if (!device) {
-            console.log("Device not found in DB, returning FREE status");
             return res.json({ success: true, data: { plan: "FREE", isActive: false, expiryDate: 0 } });
         }
 
-        const now = new Date();
-        const isActive = device.expires_at && new Date(device.expires_at) > now;
-
-        console.log(`Device status: ${device.plan}, Active: ${isActive}, Expiry: ${device.expires_at}`);
         res.json({
             success: true,
             data: {
