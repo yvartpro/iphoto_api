@@ -21,6 +21,7 @@ app.use(express.json());
 
 
 // Serve public folder
+express.static.mime.define({'application/vnd.android.package-archive': ['apk']});
 app.use(express.static(path.join(__dirname, "public")));
 
 

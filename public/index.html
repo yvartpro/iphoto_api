@@ -773,7 +773,7 @@ if (!servicesGrid.hasChildNodes()) {
 const projects = [
   {cat:'Business', title:'Resilience Masters', desc:'A guide and funnel for Network Marketing presentation.', tech:['Vuejs','Express.js','MySQL'], color1:'#15803d', color2:'#0a3d1f'},
   {cat:'Business', title:'Network Marketing Academia', desc:'A platform for Network Marketing education and resources.', tech:['Vuejs','Express.js','MySQL'], color1:'#0a3d1f', color2:'#146c34'},
-  {cat:'Media', title:'iPhoto', desc:'An image compressor with advanced optimization, keeping visual quality while reducing file size near 100%.', tech:['Kotlin'], color1:'#146c34', color2:'#07150d'},
+  {cat:'Media', title:'iPhoto', desc:'An image compressor with advanced optimization, keeping visual quality while reducing file size near 100%.', tech:['Kotlin'], color1:'#146c34', color2:'#07150d', url: "iPhoto.apk", cta: "Download APK"},
 ];
 const portfolioGrid = document.getElementById('portfolio-grid');
 projects.forEach((p,i)=>{
@@ -792,6 +792,7 @@ projects.forEach((p,i)=>{
       <p class="text-slate-500 text-sm mt-2 leading-relaxed">${p.desc}</p>
       <div class="flex flex-wrap gap-2 mt-4">
         ${p.tech.map(t=>`<span class="mono text-[10px] uppercase tracking-wider bg-slate-50 border border-slate-100 text-slate-500 px-2.5 py-1 rounded-full">${t}</span>`).join('')}
+        ${p?.url ? `<a href="/${p.url}" download="${p.url}" class="mono text-[10px] uppercase tracking-wider bg-gold border border-gold text-white px-2.5 py-1 rounded-full hover:bg-transparent hover:text-gold transition-colors duration-300">${p?.cta || "Download"}</a>` : ''}
       </div>
     </div>
   `;
